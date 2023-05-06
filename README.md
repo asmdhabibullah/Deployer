@@ -75,8 +75,11 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
 
 
+# Finally
+## যে জীবন মরণেও কাঁদাবে
 
-যে জীবন মরণে ও কাঁদাবে,
+```
+যে জীবন মরণেও কাঁদাবে,
 সে জীবন গড়ে নিও পাড়লে।
 
 যে জীবন মরণেও হাসাবে, 
@@ -97,6 +100,6 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/deploym
 সে জীবন কখনো তো মরে না
 বেঁচে থাকে মানুষের স্মৃতিতে।।
 
-     _ নুরুজ্জামান শাহ
+_ নুরুজ্জামান শাহ
 
-
+```
