@@ -75,8 +75,7 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
 
 
-## Finally
-### [যে জীবন মরণেও কাঁদাবে](https://www.youtube.com/watch?v=otQCQ6rLMCg&t=453s&ab_channel=SaifullahMansurOfficial) । সাইফুল্লাহ মানছুর । Je Jibon Moroneo Kadabe । Saifullah Mnasur । Jiboner Gan
+### Finally: [যে জীবন মরণেও কাঁদাবে](https://www.youtube.com/watch?v=otQCQ6rLMCg&t=453s&ab_channel=SaifullahMansurOfficial){:target="_blank"} । সাইফুল্লাহ মানছুর । Je Jibon Moroneo Kadabe । Saifullah Mnasur
 
 ```
 যে জীবন মরণেও কাঁদাবে,
