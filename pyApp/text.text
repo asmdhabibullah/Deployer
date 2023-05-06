@@ -1,0 +1,40 @@
+torch-model-archiver --model-name densenet161 \
+--version 1.0 \
+--model-file ./image_classifier/densenet_161/model.py \
+--serialized-file ./densenet161-8d451a50.pth \ 
+--extra-files ./image_classifier/index_to_name.json \
+--handler ./image_classifier
+
+
+torch-model-archiver --model-name test1234 --version 1.0 --serialized-file ./densenet161-8d451a50.pth --model-file ./image_classifier/densenet_161/model.py --handler image_classifier --extra-file ./image_classifier/index_to_name.json
+
+
+torchserve --start --model-store ./test_models --models test1234=./test_models/test1234.mar
+
+torchserve --start --ncs --ts-config ./config.properties --log-config ./config-logs --model-store ./test_models --models test1234=./test_models/test1234.mar
+
+
+যে জীবন মরণে ও কাঁদাবে,
+সে জীবন গড়ে নিও পাড়লে।
+
+যে জীবন মরণেও হাসাবে, 
+সে জীবন গড়ে তুমি হারলে।
+
+ক্ষনিকের পৃথিবীতে কখনো,
+চিরো দিন কেউ বেঁচে থাকে না।
+
+আফসোস তার তরে যে কভু
+মানুষের মনে ছবি আকে না।
+
+হবে তুমি হতো ভাগা বড় যে 
+বিদায়ে ও কেউ ক্ষোভ ছাড়লে।
+
+যে জীবন ভালোবাসা পৃথিবীতে 
+গেঁথে থাক মানুষের বুকেতে।
+
+সে জীবন কখনো তো মরে না
+বেঁচে থাকে মানুষের স্মৃতিতে।।
+
+     _ নুরুজ্জামান শাহ
+
+

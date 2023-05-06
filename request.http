@@ -1,0 +1,1 @@
+POST https://127.0.0.1:6060/predictions/test1234 -T ../public/user-image.png
