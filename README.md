@@ -11,7 +11,7 @@
 1. This project is designed to avoid having to use a command line interface, as well as how to easily perform can deploy, and run a PyTorch-trained model after storing it in a project folder 'Storages'.
 
 ## CMD
-1. Create a model archiver as a .mar extention file
+1. Create a model runner file with a .mar extention
 ```
 torch-model-archiver --model-name densenet161 \
 --version 1.0 \
@@ -30,7 +30,8 @@ torch-model-archiver --model-name test1234 --version 1.0 --serialized-file ./den
 torchserve --start --model-store ./test_models --models test1234=./test_models/test1234.mar
 ```
 or
-```torchserve --start --ncs --ts-config ./config.properties --log-config ./config-logs --model-store ./test_models --models test1234=./test_models/test1234.mar
+```
+torchserve --start --ncs --ts-config ./config.properties --log-config ./config-logs --model-store ./test_models --models test1234=./test_models/test1234.mar
 ```
 
 
