@@ -40,4 +40,4 @@ test
 serve
 __pycache__
 test_models
-.pth
+*.pth

@@ -1,149 +1,89 @@
 import os
-import torch
-import argparse
 from flask_cors import CORS
 from flask import Flask, request, jsonify
-from torch.utils.model_zoo import load_url
 from flask_json import FlaskJSON, as_json, json_response
-from handler import archiver
+from torchserve import default_args, start_ts, connect
+from torch_model_archiver import model_packaging_utils
+from torchserve.model import Model
 
 app = Flask(__name__)
 FlaskJSON(app)
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+def archive_model(mdl_url, model_name, version, serialized_file, model_file, handler, extra_files):
+    tmp_dir = os.path.join(os.getcwd(), 'tmp')
+    if not os.path.exists(tmp_dir):
+        os.makedirs(tmp_dir)
 
-@app.route("/", methods=["GET"])
-@as_json
-def index():
-    return {
-        "msg": "Hey, I'm working. Your HTTP GET request accepted to process..."
-    }
-    # return dict(value=12)
+    mdl_url = '{}/{}.pth'.format(mdl_url, model_name)
+    mdl_path = os.path.join(tmp_dir, '{}.pth'.format(model_name))
+    model_packaging_utils.load_url(mdl_url, mdl_path)
 
-@app.route("/api/v1/create-and-start-torch", methods=["POST"])
-def archiver_pyt_model():
-    content_type = request.headers.get('Content-Type')
-    # mdl_archiver = ModelStorage("./models")
-    # mdl_archiver.add_model()
-    print("content_type", content_type)
-    # parse request data
-    if(content_type == "application/json"):
-        body = request.get_json(force=True)
-        print(body)
-        # return body
-    
-        # print(request.files)
+    archive_dir = os.path.join(os.getcwd(), 'storages', model_name)
+    if not os.path.exists(archive_dir):
+        os.makedirs(archive_dir)
 
-        version = "1.0"
-        mdl_name = body['mdl_name']
-        ser_file = body['ser_file']
-        mdl_file = body['mdl_file']
-        hdl_file = body['hdl_file']
-        ext_file = body['ext_file']
-
-        # print("mdl_name: {}, version: {}, ser_file: {}, mdl_file: {}, hdl_file: {}, ext_file: {}".format(mdl_name, version, ser_file, mdl_file, hdl_file, ext_file))
-        archiver(
-            mdl_name=mdl_name,
-            version=version,
-            ser_file=ser_file,
-            mdl_file=mdl_file,
-            hdl_file=hdl_file,
-            ext_file=ext_file,
-        )
-        
-        return json_response(msg="Your HTTP POST request accepted to process to start a torch server and make a torch model...")
-
-    return {
-        "msg": None
+    model_packaging_args = {
+        'model_name': model_name,
+        'version': version,
+        'serialized_file': serialized_file,
+        'model_file': model_file,
+        'handler': handler,
+        'extra_files': [extra_files],
+        'export_path': archive_dir
     }
 
-    # # save uploaded files to disk
-    # tmp_dir = os.path.join(os.getcwd(), 'tmp')
-    # if not os.path.exists(tmp_dir):
-    #     os.makedirs(tmp_dir)
-    # ser_file_path = os.path.join(tmp_dir, ser_file.filename)
-    # ser_file.save(ser_file_path)
-    # mdl_file_path = os.path.join(tmp_dir, mdl_file.filename)
-    # mdl_file.save(mdl_file_path)
-    # hdl_file_path = os.path.join(tmp_dir, hdl_file.filename)
-    # hdl_file.save(hdl_file_path)
-    # ext_file_path = os.path.join(tmp_dir, ext_file.filename)
-    # ext_file.save(ext_file_path)
+    model_packaging_utils.package_model(**model_packaging_args)
 
-    # # add model to storage
-    # mdl_archiver.add_model(
-    #     mdl_name=mdl_name,
-    #     version=version,
-    #     ser_file=ser_file_path,
-    #     mdl_file=mdl_file_path,
-    #     hdl_file=hdl_file_path,
-    #     ext_file=ext_file_path,
-    # )
+    return 'Model archive created at {}'.format(archive_dir)
 
-    # # remove uploaded files from disk
-    # os.system('rm -rf {}'.format(tmp_dir))
+def register_model_with_torchserve(model_name, model_file, serialized_file, handler):
+    # Check if TorchServe is already running
+    try:
+        conn = connect()
+        models = conn.get_model_names()
+    except Exception:
+        models = []
 
-    # return archiver(
-    #     mdl_name=mdl_name,
-    #     version=version,
-    #     ser_file=ser_file,
-    #     mdl_file=mdl_file,
-    #     hdl_file=hdl_file,
-    #     ext_file=ext_file,
-    # )
+    if model_name not in models:
+        # Start TorchServe with default arguments
+        args = default_args()
+        start_ts(args)
 
-#     parser = argparse.ArgumentParser(description='Flask API for PyTorch models')
-#     parser.add_argument('--model-name', type=str, help='Name of the model', required=True)
-#     parser.add_argument('--model-path', type=str, help='Path to the PyTorch model file', required=True)
-#     parser.add_argument('--host', type=str, default='0.0.0.0', help='Host to bind the API to')
-#     parser.add_argument('--port', type=int, default=5000, help='Port to bind the API to')
-    
-#     args = parser.parse_args()
+    # Register the model with TorchServe
+    model = Model(model_name, model_file, serialized_file=serialized_file, handler=handler)
+    model.register()
 
-#     model_dir = os.path.join('model_store', args.model_name)
+@app.route('/api/v1/models', methods=['POST'])
+def archive_and_register_model():
+    data = request.json
+    model_name = data['model_name']
+    version = data['version']
+    serialized_file = data['serialized_file']
+    model_file = data['model_file']
+    handler = data['handler']
+    extra_files = data['extra_files']
 
-#     if not os.path.exists(model_dir):
-#         os.makedirs(model_dir)
+    archive_model(model_name, version, serialized_file, model_file, handler, extra_files)
+    register_model_with_torchserve(model_name, model_file, serialized_file, handler)
 
-#     model_url = 'file://' + args.model_path
-#     load_url(model_url, model_dir)
-#     model = torch.jit.load(os.path.join(model_dir, 'model.pt'))
+    return jsonify({'message': 'Model archived and registered successfully'})
 
+@app.route('/api/v1/models', methods=['GET'])
+def get_models_status():
+    conn = connect()
+    models = conn.get_model_names()
+    status = []
 
-# @app.route('/items/<id>', methods=['GET'])
-# def get_item(id):
-#   item = Item.query.get(id)
-#   del item.__dict__['_sa_instance_state']
-#   return jsonify(item.__dict__)
+    for model in models:
+        health = conn.get_model_health(model)
+        status.append({
+            'model_name': model,
+            'status': 'Healthy' if health == 'HEALTHY' else 'Unhealthy',
+            'url': 'http://localhost:8080/predictions/{}'.format(model)
+        })
 
-# @app.route('/items', methods=['GET'])
-# def get_items():
-#   items = []
-#   for item in db.session.query(Item).all():
-#     del item.__dict__['_sa_instance_state']
-#     items.append(item.__dict__)
-#   return jsonify(items)
-
-# @app.route('/items', methods=['POST'])
-# def create_item():
-#   body = request.get_json()
-#   db.session.add(Item(body['title'], body['content']))
-#   db.session.commit()
-#   return "item created"
-
-# @app.route('/items/<id>', methods=['PUT'])
-# def update_item(id):
-#   body = request.get_json()
-#   db.session.query(Item).filter_by(id=id).update(
-#     dict(title=body['title'], content=body['content']))
-#   db.session.commit()
-#   return "item updated"
-
-# @app.route('/items/<id>', methods=['DELETE'])
-# def delete_item(id):
-#   db.session.query(Item).filter_by(id=id).delete()
-#   db.session.commit()
-#   return "item deleted"
+    return jsonify(status)
 
 if __name__ == '__main__':
     app.run(debug=True, host="127.0.0.1", port="3520")

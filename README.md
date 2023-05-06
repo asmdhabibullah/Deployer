@@ -1,6 +1,42 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Here's the project plan
 
-## Getting Started
+1. Create a POST API to archive a PyTorch model using torch-model-archiver and store it in to 'storages' folder.
+2.  Create a function to check if a TorchServe instance is already running, and if not, start a new one using the torchserve command.
+3. Create a function to check if a model is already registered with the TorchServe instance, and if not, register it using the torch-model-archiver command.
+4. Modify the POST API to check if TorchServe is already running, and if not, start a new instance. Then register the new model with TorchServe.
+5. Create a GET API to retrieve information on all the running models.
+6. Create a Flask Rest API app to get access from NextJS Front-End app.
+
+# Objective:
+1. This project is designed to avoid having to use a command line interface, as well as how to easily perform can deploy, and run a PyTorch-trained model after storing it in a project folder 'Storages'.
+
+## CMD
+1. Create a model archiver as a .mar extention file
+```
+torch-model-archiver --model-name densenet161 \
+--version 1.0 \
+--model-file ./image_classifier/densenet_161/model.py \
+--serialized-file ./densenet161-8d451a50.pth \ 
+--extra-files ./image_classifier/index_to_name.json \
+--handler ./image_classifier
+```
+or
+```
+torch-model-archiver --model-name test1234 --version 1.0 --serialized-file ./densenet161-8d451a50.pth --model-file ./image_classifier/densenet_161/model.py --handler image_classifier --extra-file ./image_classifier/index_to_name.json
+```
+
+2. Start a PyTorch server and attach model with the running server
+```
+torchserve --start --model-store ./test_models --models test1234=./test_models/test1234.mar
+```
+or
+```torchserve --start --ncs --ts-config ./config.properties --log-config ./config-logs --model-store ./test_models --models test1234=./test_models/test1234.mar
+```
+
+
+## This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+
+### Getting Started
 
 First, run the development server:
 
@@ -36,3 +72,30 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+
+
+
+যে জীবন মরণে ও কাঁদাবে,
+সে জীবন গড়ে নিও পাড়লে।
+
+যে জীবন মরণেও হাসাবে, 
+সে জীবন গড়ে তুমি হারলে।
+
+ক্ষনিকের পৃথিবীতে কখনো,
+চিরো দিন কেউ বেঁচে থাকে না।
+
+আফসোস তার তরে যে কভু
+মানুষের মনে ছবি আকে না।
+
+হবে তুমি হতো ভাগা বড় যে 
+বিদায়ে ও কেউ ক্ষোভ ছাড়লে।
+
+যে জীবন ভালোবাসা পৃথিবীতে 
+গেঁথে থাক মানুষের বুকেতে।
+
+সে জীবন কখনো তো মরে না
+বেঁচে থাকে মানুষের স্মৃতিতে।।
+
+     _ নুরুজ্জামান শাহ
+
+
