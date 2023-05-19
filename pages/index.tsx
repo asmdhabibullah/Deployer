@@ -1,6 +1,6 @@
+import fs from "fs";
 import Link from "next/link";
 import { useState, ChangeEvent } from "react";
-import fs from "fs";
 import { render } from "react-dom";
 
 export interface ModelUploadProps { };
@@ -17,41 +17,40 @@ const ModelUpload = ({ ...props }: ModelUploadProps): JSX.Element => {
 
   const [modelData, setModelData] = useState(data);
 
-  const formData = new FormData();
+  // const formData = new FormData();
 
-  const handInputeleFile = (name: any) => (env: ChangeEvent) => {
+  const handInputeleFile = (name: any) => (env: any) => {
     if (env) {
       // console.log(env);
       // setModelData({ ...modelData, [name]: env.target.files[0] });
 
-      let file = env.target.files[0];
+      let file = env?.target?.files[0];
 
       let reader = new FileReader();
 
-      reader.readAsDataURL(file)
+      // reader.readAsDataURL(file)
       // console.log("file", file.name);
-
-
 
       // formData.append(name, fs.createReadStream(file))
       // formData.append(name, url);
 
-      reader.onload = () => {
+      reader.onload = (e) => {
+        const path = e.target?.result;
         // console.log("reader", reader.result);
-        setModelData({ ...modelData, [name]: reader.result })
-      };
-      reader.onerror = (error) => {
-        console.log('Error: ', error);
+        setModelData({ ...modelData, [name]: path })
+        // setModelData({ ...modelData, [name]: reader.result })
       }
-
+      reader.readAsDataURL(file);
+      // reader.onerror = (error) => {
+      //   console.log('Error: ', error);
+      // }
       // reader.readAsArrayBuffer(file);
-
     } else {
       // setModelData({ ...modelData, [name]: "" });
     }
   }
 
-  const handInputeleText = (name: any) => (env: ChangeEvent) => {
+  const handInputeleText = (name: any) => (env: any) => {
     if (env) {
       // console.log(env);
       setModelData({ ...modelData, [name]: env.target.value });
@@ -62,32 +61,28 @@ const ModelUpload = ({ ...props }: ModelUploadProps): JSX.Element => {
     }
   }
 
-  console.log("modelData", modelData);
+  // console.log("modelData", modelData);
   // console.log("formData", formData);
 
   const handleSubmit = async (env: any) => {
     env.preventDefault();
-
-    // const body = formData.append(modelData);
-
-    // console.log("modelData", modelData);
-
-    const req = await fetch("http://127.0.0.1:3520/api/v1/create-and-start-torch", {
+    fetch("http://127.0.0.1:3520/api/v1/models", {
       method: "POST",
       body: JSON.stringify(modelData),
       headers: {
         'Content-Type': 'application/json',
         // 'Content-Type': 'multipart/form-data'
       },
-    });
-
-    // console.log("req", );
-
-    await req.json()
-
-    if (req?.status === 200) {
-      setModelData(data);
-    }
+    })
+      .then(response => response.json())
+      .then(data => {
+        // Process the successful response
+        console.log(data);
+      })
+      .catch(error => {
+        // Handle the error response
+        console.error("error", error);
+      });
   }
 
   return (
@@ -155,6 +150,11 @@ const ModelUpload = ({ ...props }: ModelUploadProps): JSX.Element => {
           <input type="text" name="mdl_name" id="mdl_name" onChange={handInputeleText("mdl_name")} className="text-[#000]" />
         </label>
 
+        <label htmlFor="version" className="w-[564px] h-[313px] absolute left-[829px] top-[32px]" >
+          <span>Version</span>
+          <input type="text" name="version" id="version" onChange={handInputeleText("version")} className="text-[#000]" />
+        </label>
+
         <label htmlFor="mdl_file">
           <div className="w-[564px] h-[313px] absolute left-[529px] top-[132px]">
             <div className="bg-[rgba(13,24,64,0.74)] rounded-[37px] border-dashed border-[#ffffff] border-2 w-[564px] h-[313px] absolute left-0 top-0"></div>
@@ -166,7 +166,6 @@ const ModelUpload = ({ ...props }: ModelUploadProps): JSX.Element => {
               >
                 Upload model file here
               </div>
-
 
               <img
                 className="w-[105px] h-[105px] absolute left-[137px] top-0"
