@@ -1,89 +1,71 @@
-import fs from "fs";
+import { API } from "@/utils";
 import Link from "next/link";
-import { useState, ChangeEvent } from "react";
-import { render } from "react-dom";
+import { useState } from "react";
 
 export interface ModelUploadProps { };
 
-const data = {
-  mdl_name: "",
-  mdl_file: "",
-  ext_file: "",
-  hdl_file: "",
-  ser_file: ""
-};
+// const data = {
+//   mdl_name: null,
+//   mdl_file: null,
+//   ext_file: null,
+//   hdl_file: null,
+//   ser_file: null
+// };
 
 const ModelUpload = ({ ...props }: ModelUploadProps): JSX.Element => {
 
-  const [modelData, setModelData] = useState(data);
+  const [modelData, setModelData] = useState<{} | any>({});
 
-  // const formData = new FormData();
+  const handleInputeleFile = (name: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files && event.target.files[0];
+    if (file) {
+      // formData.append(name, file);
+      setModelData({ ...modelData, [name]: file });
+    }
+  };
 
-  const handInputeleFile = (name: any) => (env: any) => {
-    if (env) {
-      // console.log(env);
-      // setModelData({ ...modelData, [name]: env.target.files[0] });
+  const handleInputeleText = (name: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value && event.target.value;
+    // setModelData(prevFormData => ({ ...prevFormData, [name]: value }));
+    setModelData({ ...modelData, [name]: value });
+  };
 
-      let file = env?.target?.files[0];
-
-      let reader = new FileReader();
-
-      // reader.readAsDataURL(file)
-      // console.log("file", file.name);
-
-      // formData.append(name, fs.createReadStream(file))
-      // formData.append(name, url);
-
-      reader.onload = (e) => {
-        const path = e.target?.result;
-        // console.log("reader", reader.result);
-        setModelData({ ...modelData, [name]: path })
-        // setModelData({ ...modelData, [name]: reader.result })
-      }
-      reader.readAsDataURL(file);
-      // reader.onerror = (error) => {
-      //   console.log('Error: ', error);
-      // }
-      // reader.readAsArrayBuffer(file);
-    } else {
-      // setModelData({ ...modelData, [name]: "" });
+  const handleFolderPath = (name: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      const firstFile = files[0];
+      const path = firstFile.webkitRelativePath;
+      console.log('Selected Folder Path:', path);
+      // Process the selected folder path here
     }
   }
 
-  const handInputeleText = (name: any) => (env: any) => {
-    if (env) {
-      // console.log(env);
-      setModelData({ ...modelData, [name]: env.target.value });
-      // formData.append(name, env.target.value);
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
 
-    } else {
-      // setModelData({ ...modelData, [name]: "" });
+    const finalFormData = new FormData();
+
+    // Append values from formData object to finalFormData
+    for (const key in modelData) {
+      finalFormData.append(key, modelData[key]);
     }
-  }
 
-  // console.log("modelData", modelData);
-  // console.log("formData", formData);
+    console.log("finalFormData", finalFormData);
 
-  const handleSubmit = async (env: any) => {
-    env.preventDefault();
-    fetch("http://127.0.0.1:3520/api/v1/models", {
+    fetch(`http://127.0.0.1:3520/api/v1/model/create`, {
       method: "POST",
-      body: JSON.stringify(modelData),
-      headers: {
-        'Content-Type': 'application/json',
-        // 'Content-Type': 'multipart/form-data'
-      },
+      body: finalFormData,
     })
       .then(response => response.json())
       .then(data => {
         // Process the successful response
-        console.log(data);
+        console.log("data", data);
       })
       .catch(error => {
         // Handle the error response
         console.error("error", error);
       });
-  }
+  };
 
   return (
     <div className="bg-[#071135] w-[auto] h-[1200px] relative overflow-hidden">
@@ -142,17 +124,16 @@ const ModelUpload = ({ ...props }: ModelUploadProps): JSX.Element => {
         />
       </div>
 
-
-      <>
+      <form onSubmit={handleSubmit}>
 
         <label htmlFor="mdl_name" className="w-[564px] h-[313px] absolute left-[529px] top-[32px]" >
-          <span>Model Name</span>
-          <input type="text" name="mdl_name" id="mdl_name" onChange={handInputeleText("mdl_name")} className="text-[#000]" />
+          <span className="bg-[#000]">Model Name</span>
+          <input type="text" name="mdl_name" id="mdl_name" onChange={handleInputeleText("mdl_name")} className="text-[#000]" />
         </label>
 
         <label htmlFor="version" className="w-[564px] h-[313px] absolute left-[829px] top-[32px]" >
-          <span>Version</span>
-          <input type="text" name="version" id="version" onChange={handInputeleText("version")} className="text-[#000]" />
+          <span className="bg-[#000]">Version</span>
+          <input type="text" name="version" id="version" onChange={handleInputeleText("version")} className="text-[#000]" />
         </label>
 
         <label htmlFor="mdl_file">
@@ -173,7 +154,7 @@ const ModelUpload = ({ ...props }: ModelUploadProps): JSX.Element => {
               />
 
             </div>
-            <input hidden type="file" name="mdl_file" id="mdl_file" onChange={handInputeleFile("mdl_file")} />
+            <input hidden type="file" name="mdl_file" id="mdl_file" onChange={handleInputeleFile("mdl_file")} />
           </div>
         </label>
 
@@ -187,7 +168,7 @@ const ModelUpload = ({ ...props }: ModelUploadProps): JSX.Element => {
                 className="text-[#dadada] text-center absolute left-0 top-[125px] w-[378px]"
                 style={{ font: "500 20px 'Inter', sans-serif" }}
               >
-                Upload ext_file file here
+                Upload extra file
               </div>
 
               <img
@@ -195,13 +176,11 @@ const ModelUpload = ({ ...props }: ModelUploadProps): JSX.Element => {
                 src="file-1.png"
               />
             </div>
-            <input hidden type="file" name="ext_file" id="ext_file" onChange={handInputeleFile("ext_file")} />
+            <input hidden type="file" name="ext_file" id="ext_file" onChange={handleInputeleFile("ext_file")} />
           </div>
         </label>
 
         <label htmlFor="hdl_file">
-
-
           <div className="w-[564px] h-[313px] absolute left-[529px] top-[546px]">
             <div className="bg-[rgba(13,24,64,0.74)] rounded-[37px] border-dashed border-[#ffffff] border-2 w-[564px] h-[313px] absolute left-0 top-0"></div>
 
@@ -210,7 +189,7 @@ const ModelUpload = ({ ...props }: ModelUploadProps): JSX.Element => {
                 className="text-[#dadada] text-center absolute left-0 top-[125px] w-[378px]"
                 style={{ font: "500 20px 'Inter', sans-serif" }}
               >
-                Upload hdl_file file here
+                Upload handler file
               </div>
 
               <img
@@ -218,13 +197,12 @@ const ModelUpload = ({ ...props }: ModelUploadProps): JSX.Element => {
                 src="file-1.png"
               />
             </div>
-            <input hidden type="file" name="hdl_file" id="hdl_file" onChange={handInputeleFile("hdl_file")} />
+            <input hidden type="file" name="hdl_file" id="hdl_file" onChange={handleFolderPath("hdl_file")} webkitdirectory="true" />
           </div>
 
         </label>
 
         <label htmlFor="ser_file">
-
           <div className="w-[564px] h-[313px] absolute left-[1215px] top-[546px]">
             <div className="bg-[rgba(13,24,64,0.74)] rounded-[37px] border-dashed border-[#ffffff] border-2 w-[564px] h-[313px] absolute left-0 top-0"></div>
 
@@ -233,7 +211,7 @@ const ModelUpload = ({ ...props }: ModelUploadProps): JSX.Element => {
                 className="text-[#dadada] text-center absolute left-0 top-[125px] w-[378px]"
                 style={{ font: "500 20px 'Inter', sans-serif" }}
               >
-                Upload ser_file file here
+                Upload serialized file
               </div>
 
               <img
@@ -241,7 +219,7 @@ const ModelUpload = ({ ...props }: ModelUploadProps): JSX.Element => {
                 src="file-1.png"
               />
             </div>
-            <input hidden type="file" name="ser_file" id="ser_file" onChange={handInputeleFile("ser_file")} />
+            <input hidden type="file" name="ser_file" id="ser_file" onChange={handleInputeleFile("ser_file")} />
           </div>
 
         </label>
@@ -253,12 +231,12 @@ const ModelUpload = ({ ...props }: ModelUploadProps): JSX.Element => {
             className="text-[#fedb41] text-center absolute left-16 top-[38px] w-[310px] h-[23px]"
             style={{ font: "700 20px 'Inter', sans-serif" }}
           >
-            <button type="submit" onClick={handleSubmit}>
-              Start The Deployment
+            <button type="submit">
+              Start Deployment
             </button>
           </div>
         </div>
-      </>
+      </form>
 
       <div className="w-[310px] h-[74px] absolute left-[39px] top-[1067px]">
         <div className="bg-[#0b163d] rounded-[59px] w-[291px] h-[74px] absolute left-2.5 top-0"></div>
@@ -275,3 +253,79 @@ const ModelUpload = ({ ...props }: ModelUploadProps): JSX.Element => {
 };
 
 export default ModelUpload;
+
+
+
+  // console.log(API);
+
+  // const handleInputeleFile = (name: any) => (env: any) => {
+  //   if (env) {
+  //     // console.log(env);
+  //     // setModelData({ ...modelData, [name]: env.target.files[0] });
+
+  //     let file = env?.target?.files[0];
+
+  //     formData.append(name, file);
+
+  //     // let reader = new FileReader();
+
+  //     // reader.readAsDataURL(file)
+  //     // console.log("file", file.name);
+
+  //     // formData.append(name, fs.createReadStream(file))
+  //     // formData.append(name, url);
+
+  //     // reader.onload = (e) => {
+  //     //   const path = e.target?.result;
+  //     //   // console.log("reader", reader.result);
+  //     //   setModelData({ ...modelData, [name]: path })
+  //     //   // setModelData({ ...modelData, [name]: reader.result })
+  //     // }
+  //     // reader.readAsDataURL(file);
+  //     // // reader.onerror = (error) => {
+  //     //   console.log('Error: ', error);
+  //     // }
+  //     // reader.readAsArrayBuffer(file);
+  //   } else {
+  //     // setModelData({ ...modelData, [name]: "" });
+  //     console.log("Something wrong!");
+  //   }
+  // }
+
+  // const handleInputeleText = (name: any) => (env: any) => {
+  //   if (env) {
+  //     // console.log(env);
+  //     // setModelData({ ...modelData, [name]: env.target.value });
+  //     formData.append(name, env.target.value);
+
+  //   } else {
+  //     // setModelData({ ...modelData, [name]: "" });
+  //   }
+  // }
+
+  // // console.log("modelData", modelData);
+
+  // const handleSubmit = async (env: any) => {
+  //   env.preventDefault();
+
+  //   console.log("formData", formData);
+
+  //   fetch("http://127.0.0.1:3520/api/v1/model/create", {
+  //     method: "POST",
+  //     body: formData,
+  //     // body: JSON.stringify(modelData),
+  //     // headers: {
+  //     //   'Content-Type': 'application/json',
+  //     //   // 'Content-Type': 'multipart/form-data'
+  //     // },
+  //   })
+  //     .then(response => response.json())
+  //     .then(data => {
+  //       // Process the successful response
+  //       console.log(data);
+  //     })
+  //     .catch(error => {
+  //       // Handle the error response
+  //       console.error("error", error);
+  //     });
+  // }

@@ -42,3 +42,11 @@ __pycache__
 test_models
 *.pth
 penv
+*.pt
+*.mar
+*.properties
+*.gz
+*.cfg
+/models
+/storage
+/logs
