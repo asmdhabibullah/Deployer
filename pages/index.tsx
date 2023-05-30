@@ -4,7 +4,9 @@ import { useState } from "react";
 
 export interface ModelUploadProps { };
 
-// const data = {
+// const data: Object = {
+//   message: null,
+//   version: null,
 //   mdl_name: null,
 //   mdl_file: null,
 //   ext_file: null,
@@ -14,7 +16,9 @@ export interface ModelUploadProps { };
 
 const ModelUpload = ({ ...props }: ModelUploadProps): JSX.Element => {
 
-  const [modelData, setModelData] = useState<{} | any>({});
+  const [message, setMeeage] = useState<string | null>(null);
+
+  const [modelData, setModelData] = useState<any | null>({});
 
   const handleInputeleFile = (name: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files && event.target.files[0];
@@ -30,17 +34,21 @@ const ModelUpload = ({ ...props }: ModelUploadProps): JSX.Element => {
     setModelData({ ...modelData, [name]: value });
   };
 
-  const handleFolderPath = (name: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files && files.length > 0) {
-      const firstFile = files[0];
-      const path = firstFile.webkitRelativePath;
-      console.log('Selected Folder Path:', path);
-      // Process the selected folder path here
-    }
-  }
+  // const handleFolderPath = (name: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   const files = event.target.files;
+  //   if (files && files.length > 0) {
+  //     const firstFile = files[0];
+  //     const path = firstFile.webkitRelativePath;
+  //     // console.log('Selected Folder Path:', path);
+  //     // Process the selected folder path here
+  //   }
+  // }
+
+  console.log("modelData", modelData);
+
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+
     event.preventDefault();
 
     const finalFormData = new FormData();
@@ -59,7 +67,8 @@ const ModelUpload = ({ ...props }: ModelUploadProps): JSX.Element => {
       .then(response => response.json())
       .then(data => {
         // Process the successful response
-        console.log("data", data);
+        // console.log("data", data);
+        setMeeage(data.message)
       })
       .catch(error => {
         // Handle the error response
@@ -97,10 +106,11 @@ const ModelUpload = ({ ...props }: ModelUploadProps): JSX.Element => {
       </div>
 
       <div className="w-[238px] h-[110px] absolute left-[74px] top-[328px]">
+
         <Link as="/" href="/">
           <div
-            className="text-[#0038ff] text-left absolute left-0 top-0 w-[238px] h-[27px]"
-            style={{ font: "700 20px 'Inter', sans-serif" }}
+            className="text-left absolute left-0 top-0 w-[238px] h-[27px]"
+            style={{ font: "700 20px 'Inter', sans-serif", color: 'blue' }}
           >
             Deployment
           </div>
@@ -108,8 +118,8 @@ const ModelUpload = ({ ...props }: ModelUploadProps): JSX.Element => {
 
         <Link as="/models" href="/models">
           <div
-            className="text-[#1e1e1e] text-left absolute left-0 top-[83px] w-[238px] h-[27px]"
-            style={{ font: "500 20px 'Inter', sans-serif" }}
+            className=" text-left absolute left-0 top-[83px] w-[238px] h-[27px]"
+            style={{ font: "500 20px 'Inter', sans-serif", color: 'black' }}
           >
             Deployed
           </div>
@@ -127,14 +137,16 @@ const ModelUpload = ({ ...props }: ModelUploadProps): JSX.Element => {
       <form onSubmit={handleSubmit}>
 
         <label htmlFor="mdl_name" className="w-[564px] h-[313px] absolute left-[529px] top-[32px]" >
-          <span className="bg-[#000]">Model Name</span>
+          <span className="text-white">Model Name: </span>
           <input type="text" name="mdl_name" id="mdl_name" onChange={handleInputeleText("mdl_name")} className="text-[#000]" />
         </label>
 
         <label htmlFor="version" className="w-[564px] h-[313px] absolute left-[829px] top-[32px]" >
-          <span className="bg-[#000]">Version</span>
+          <span className="text-white">Version: </span>
           <input type="text" name="version" id="version" onChange={handleInputeleText("version")} className="text-[#000]" />
         </label>
+
+        {/* <label htmlFor="version" className="w-[564px] h-[313px] absolute left-[829px] top-[32px]" > */}
 
         <label htmlFor="mdl_file">
           <div className="w-[564px] h-[313px] absolute left-[529px] top-[132px]">
@@ -197,7 +209,7 @@ const ModelUpload = ({ ...props }: ModelUploadProps): JSX.Element => {
                 src="file-1.png"
               />
             </div>
-            <input hidden type="file" name="hdl_file" id="hdl_file" onChange={handleFolderPath("hdl_file")} webkitdirectory="true" />
+            <input hidden type="file" name="hdl_file" id="hdl_file" onChange={handleInputeleFile("hdl_file")} />
           </div>
 
         </label>
@@ -224,6 +236,12 @@ const ModelUpload = ({ ...props }: ModelUploadProps): JSX.Element => {
 
         </label>
 
+        {
+          message && (
+            <span className="w-[437px] h-[98px] absolute left-[935px] top-[920px] text-white">Status: {message}</span>
+          )
+        }
+
         <div className="w-[437px] h-[98px] absolute left-[935px] top-[969px]">
           <div className="bg-[#0b163d] rounded-[150px] border-solid border-[#ffffff] border w-[437px] h-[98px] absolute left-0 top-0"></div>
 
@@ -248,7 +266,7 @@ const ModelUpload = ({ ...props }: ModelUploadProps): JSX.Element => {
           Project by Ali Mansab
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 
