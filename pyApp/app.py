@@ -212,13 +212,6 @@ def upload_files_create_model():
     # Create a "models" directory if it doesn't exist
     if not os.path.exists(os.path.join('models')):
         os.makedirs('models')
-    
-    # form_data = request.form
-
-    # Convert form data to JSON
-    # json_data = {}
-    # for key in form_data.keys():
-    #     json_data[key] = form_data.get(key)
 
     data = request.form.to_dict(flat=False)
 
@@ -241,14 +234,6 @@ def upload_files_create_model():
         'hdl_file': handler_file,
         'ext_file': extra_file
     }
-
-    # json_data["ext_file"] =extra_file
-    # json_data["mdl_file"] = model_file
-    # json_data["hdl_file"] =handler_file
-    # json_data["ser_file"] =serialized_file
-
-
-    # json_data = json.dumps(new_data)
 
     keys_to_validate = ['mdl_name', 'version', 'ser_file', 'mdl_file', 'hdl_file', 'ext_file']
 
@@ -284,14 +269,6 @@ def upload_files_create_model():
     serve_model(archive_path, model_name)
 
     return jsonify({'message': 'Model archivend and uploaded to serve successfully.'})
-
-# def get_model_info():
-#     # ping_url = 'http://localhost:8080/ping'
-#     # ping_data = requests.get(ping_url)
-
-#     # url = 'http://localhost:8081/models'
-#     # response = requests.get(url)
-#     return get_all_data()
 
 @app.route('/api/v1/model', methods=['GET'])
 def get_all_model_info():
